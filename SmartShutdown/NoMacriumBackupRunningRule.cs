@@ -20,6 +20,9 @@ namespace SmartShutdown
 			return _lastresult;
 		}
 
+		/// <summary>
+		/// Returns the cached result of the last query
+		/// </summary>
 		public bool IsOkayToShutdown
 		{
 			get
@@ -33,12 +36,17 @@ namespace SmartShutdown
 			get { return true; }
 		}
 
+		/// <summary>
+		/// Returns when there exist no more of these processes
+		/// </summary>
 		public void Wait()
 		{
 			var procs = Process.GetProcessesByName(_procname);
-			if (procs.Count() > 0)
+			while (procs.Count() > 0)
 			{
-				procs.Select(p => p.WaitForExit());
+				procs.First().WaitForExit();
+				System.Threading.Thread.Sleep(15000); // sleep 15 seconds to allow new processes to spawn
+				procs = Process.GetProcessesByName(_procname);
 			}
 		}
 
