@@ -13,7 +13,7 @@ namespace SmartShutdown
 
 		public UserIdleRule(TimeSpan UserIdleTime)
 		{
-			Debug.WriteLine("I exist!", this);
+			Debug.WriteLine("I exist!", this.ToString());
 			timeout = (long) Math.Abs(UserIdleTime.TotalMilliseconds);
 		}
 
@@ -21,15 +21,15 @@ namespace SmartShutdown
 
 		public bool Check()
 		{
-			Debug.WriteLine("Checking", this);
+			Debug.WriteLine("Checking", this.ToString());
 			if (Win32.GetLastInputTime() > timeout)
 			{
-				Debug.WriteLine("user is idle", this);
+				Debug.WriteLine("user is idle", this.ToString());
 				return true;
 			}
 			else
 			{
-				Debug.WriteLine("user is active", this);
+				Debug.WriteLine("user is active", this.ToString());
 				return false;
 			}
 		}
@@ -37,20 +37,20 @@ namespace SmartShutdown
 		public bool IsOkayToShutdown
 		{
 			get {
-				Debug.WriteLine("okay", this);
+				Debug.WriteLine("okay", this.ToString());
 				return Check(); }
 		}
 
 		public bool CanWaitForOkay
 		{
 			get {
-				Debug.WriteLine("I cannot wait for a shutdown", this);
+				Debug.WriteLine("I cannot wait for a shutdown", this.ToString());
 				return false; }
 		}
 
 		public void Wait()
 		{
-			Debug.WriteLine("dafuq?", this);
+			Debug.WriteLine("dafuq?", this.ToString());
 			throw new NotImplementedException();
 		}
 

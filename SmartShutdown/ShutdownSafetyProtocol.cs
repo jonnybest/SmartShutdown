@@ -45,7 +45,7 @@ namespace SmartShutdown
 			if (DateTime.Now - _lastStep < _interval)
 			{
 				// nope, too soon.
-				Debug.WriteLine("Too soon", this);
+				Debug.WriteLine("Too soon", this.ToString());
 				return CurrentState;
 			}
 			switch (_state)
@@ -53,19 +53,19 @@ namespace SmartShutdown
 				case ShutdownSafetyStates.NotSafe:
 					if (checkRules())
 					{
-						Debug.WriteLine("leaving notsafe", this);
+						Debug.WriteLine("leaving notsafe", this.ToString());
 						_state = ShutdownSafetyStates.Checked;
 					}
 					break;
 				case ShutdownSafetyStates.Checked:
 					if (checkRulesAgain())
 					{
-						Debug.WriteLine("leaving checked", this);
+						Debug.WriteLine("leaving checked", this.ToString());
 						_state = ShutdownSafetyStates.Safe;
 					}
 					else
 					{
-						Debug.WriteLine("something came up, back to unsafe", this);
+						Debug.WriteLine("something came up, back to unsafe", this.ToString());
 						_state = ShutdownSafetyStates.NotSafe;
 					}
 					break;
@@ -119,13 +119,22 @@ namespace SmartShutdown
 				{
 					rule.Wait();
 				}
+				else
+				{
+					if (!rule.IsOkayToShutdown)
+					{
+						Debug.WriteLine("something came up while checking " + rule.ToString(), this.ToString());
+						_state = ShutdownSafetyStates.NotSafe;
+						return;
+					}
+				}
 			}
 			Shutdown();
 		}
 
 		private void Shutdown()
 		{
-			Debug.WriteLine("shutting down. good night", this);
+			Debug.WriteLine("shutting down. good night", this.ToString());
 			new WPFAboutBox1(App.Current.MainWindow).ShowDialog(); // fake implementation 
 		}
 	}

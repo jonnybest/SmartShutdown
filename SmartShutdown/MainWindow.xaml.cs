@@ -11,6 +11,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Timers;
+using System.Diagnostics;
 
 namespace SmartShutdown
 {
@@ -20,16 +22,49 @@ namespace SmartShutdown
 	public partial class MainWindow : Window
 	{
 		ShutdownSafetyProtocol currentProtocol;
+		TimeSpan initialGracePeriodBetweenSteps = TimeSpan.FromSeconds(5);
+		TimeSpan userIdleTime = TimeSpan.FromSeconds(5);
+		Timer myTimer = new Timer();
 
 		public MainWindow()
 		{
 			InitializeComponent();
-			currentProtocol = new ShutdownSafetyProtocol(TimeSpan.FromSeconds(5));
+			// set up protocol
+			currentProtocol = new ShutdownSafetyProtocol(initialGracePeriodBetweenSteps);
+			//currentProtocol.AddRule(new NoMacriumBackupRunningRule());
+			currentProtocol.AddRule(new UserIdleRule(userIdleTime));			
+		}
+
+		void myTimer_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			Debug.WriteLine("timer is done", this.ToString());
+			var oldstate = currentProtocol.CurrentState;
+			var newstate = currentProtocol.DoTransition();
+			if (oldstate == newstate)
+			{
+				Debug.WriteLine("timer came in too soon. increasing interval", this.ToString());
+				myTimer.Interval = myTimer.Interval * 2;
+			}
+			else
+			{
+				Debug.WriteLine("timer changed state. resetting interval", this.ToString());
+				myTimer.Interval = initialGracePeriodBetweenSteps.TotalMilliseconds / 2;
+			}
+			myTimer.Start();
 		}
 
 		private void button1_Click(object sender, RoutedEventArgs e)
 		{
 			currentProtocol.DoTransition();
+		}
+
+		private void Window_Loaded(object sender, RoutedEventArgs e)
+		{
+			// set up timer
+			myTimer.AutoReset = false;
+			myTimer.Interval = initialGracePeriodBetweenSteps.TotalMilliseconds / 2;
+			myTimer.Elapsed += new ElapsedEventHandler(myTimer_Elapsed);			
+			myTimer.Start();
 		}
 	}
 }
