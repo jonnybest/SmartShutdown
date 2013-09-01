@@ -19,9 +19,17 @@ namespace SmartShutdown
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		ShutdownSafetyProtocol currentProtocol;
+
 		public MainWindow()
 		{
 			InitializeComponent();
+			currentProtocol = new ShutdownSafetyProtocol(TimeSpan.FromSeconds(5));
+		}
+
+		private void button1_Click(object sender, RoutedEventArgs e)
+		{
+			currentProtocol.DoTransition();
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace SmartShutdown
 {
@@ -17,15 +18,17 @@ namespace SmartShutdown
 	/// </summary>
 	class ShutdownSafetyProtocol
 	{
-		List<IShutdownRule> _rules = new List<IShutdownRule>();
-		TimeSpan _interval = null;
+		private List<IShutdownRule> _rules = new List<IShutdownRule>();
+		private TimeSpan _interval;
+		private DateTime _lastStep = DateTime.Now;
+		private ShutdownSafetyStates _state = ShutdownSafetyStates.NotSafe;
 
-		public ShutdownSafetyStates CurrentState { get; }
+		public ShutdownSafetyStates CurrentState { get { return _state; } }
 
 		public ShutdownSafetyProtocol(TimeSpan IntervalPerStep)
 		{
 			_interval = IntervalPerStep;
-			CurrentState = ShutdownSafetyStates.NotSafe;
+			_state = ShutdownSafetyStates.NotSafe;
 		}
 
 		public void AddRule(IShutdownRule Rule)
@@ -38,24 +41,32 @@ namespace SmartShutdown
 
 		public ShutdownSafetyStates DoTransition()
 		{
-			switch (ShutdownSafetyStates)
+			// only attemt to transition if the last step is _interval in the past
+			if (DateTime.Now - _lastStep < _interval)
+			{
+				// nope, too soon.
+				Debug.WriteLine("Too soon", this);
+				return CurrentState;
+			}
+			switch (_state)
 			{
 				case ShutdownSafetyStates.NotSafe:
-					bool canTransition = checkRules();
-					if (canTransition)
+					if (checkRules())
 					{
-						CurrentState = ShutdownSafetyStates.Checked;
+						Debug.WriteLine("leaving notsafe", this);
+						_state = ShutdownSafetyStates.Checked;
 					}
 					break;
 				case ShutdownSafetyStates.Checked:
-					bool canTransition = checkRulesAgain();
-					if (canTransition)
+					if (checkRulesAgain())
 					{
-						CurrentState = ShutdownSafetyStates.Safe;
+						Debug.WriteLine("leaving checked", this);
+						_state = ShutdownSafetyStates.Safe;
 					}
 					else
 					{
-						CurrentState = ShutdownSafetyStates.NotSafe;
+						Debug.WriteLine("something came up, back to unsafe", this);
+						_state = ShutdownSafetyStates.NotSafe;
 					}
 					break;
 				case ShutdownSafetyStates.Safe:
@@ -64,6 +75,8 @@ namespace SmartShutdown
 				default:
 					break;
 			}
+			_lastStep = DateTime.Now;
+			return CurrentState;
 		}
 
 		/// <summary>
@@ -112,7 +125,8 @@ namespace SmartShutdown
 
 		private void Shutdown()
 		{
-			new WPFAboutBox1().ShowDialog(); // fake implementation 
+			Debug.WriteLine("shutting down. good night", this);
+			new WPFAboutBox1(App.Current.MainWindow).ShowDialog(); // fake implementation 
 		}
 	}
 }
