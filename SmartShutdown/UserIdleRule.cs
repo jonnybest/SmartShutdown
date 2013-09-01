@@ -22,13 +22,15 @@ namespace SmartShutdown
 		public bool Check()
 		{
 			Debug.WriteLine("Checking", this.ToString());
-			if (Win32.GetLastInputTime() > timeout)
+			if (Win32.GetIdleTime() > timeout)
 			{
+				Debug.WriteLine(Win32.GetIdleTime(), "idle for");
 				Debug.WriteLine("user is idle", this.ToString());
 				return true;
 			}
 			else
 			{
+				Debug.WriteLine(Win32.GetIdleTime(), "idle for");
 				Debug.WriteLine("user is active", this.ToString());
 				return false;
 			}

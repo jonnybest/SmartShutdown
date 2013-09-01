@@ -10,7 +10,8 @@ namespace SmartShutdown
 	{
 		NotSafe,
 		Checked,
-		Safe
+		Safe,
+		Final
 	}
 
 	/// <summary>
@@ -72,6 +73,8 @@ namespace SmartShutdown
 				case ShutdownSafetyStates.Safe:
 					WaitAndShutdown();
 					break;
+				case ShutdownSafetyStates.Final:
+					break;
 				default:
 					break;
 			}
@@ -130,12 +133,21 @@ namespace SmartShutdown
 				}
 			}
 			Shutdown();
+			_state = ShutdownSafetyStates.Final;
 		}
 
-		private void Shutdown()
+		public void Shutdown()
 		{
 			Debug.WriteLine("shutting down. good night", this.ToString());
-			new WPFAboutBox1(App.Current.MainWindow).ShowDialog(); // fake implementation 
+			_state = ShutdownSafetyStates.Final;
+			// new WPFAboutBox1(App.Current.MainWindow).ShowDialog(); // fake implementation 
+			Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe"), "/s /t 600");
+		}
+
+		public void StopShutdown()
+		{
+			Debug.WriteLine("shut down halted", this.ToString());
+			Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe"), "/a");
 		}
 	}
 }

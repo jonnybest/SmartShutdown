@@ -22,16 +22,18 @@ namespace SmartShutdown
 	public partial class MainWindow : Window
 	{
 		ShutdownSafetyProtocol currentProtocol;
-		TimeSpan initialGracePeriodBetweenSteps = TimeSpan.FromSeconds(5);
-		TimeSpan userIdleTime = TimeSpan.FromSeconds(5);
+		TimeSpan initialGracePeriodBetweenSteps;
+		TimeSpan userIdleTime = TimeSpan.FromMinutes(30);
 		Timer myTimer = new Timer();
 
 		public MainWindow()
 		{
 			InitializeComponent();
 			// set up protocol
-			currentProtocol = new ShutdownSafetyProtocol(initialGracePeriodBetweenSteps);
-			//currentProtocol.AddRule(new NoMacriumBackupRunningRule());
+			initialGracePeriodBetweenSteps = TimeSpan.FromSeconds(30);
+			TimeSpan desync = TimeSpan.FromSeconds(1); // the shutdownsafety and the timer start out in sync. this is a second to desync them
+			currentProtocol = new ShutdownSafetyProtocol(initialGracePeriodBetweenSteps - desync);
+			currentProtocol.AddRule(new NoMacriumBackupRunningRule());
 			currentProtocol.AddRule(new UserIdleRule(userIdleTime));			
 		}
 
@@ -43,12 +45,12 @@ namespace SmartShutdown
 			if (oldstate == newstate)
 			{
 				Debug.WriteLine("timer came in too soon. increasing interval", this.ToString());
-				myTimer.Interval = myTimer.Interval * 2;
+				myTimer.Interval = initialGracePeriodBetweenSteps.TotalMilliseconds * 4;
 			}
 			else
 			{
 				Debug.WriteLine("timer changed state. resetting interval", this.ToString());
-				myTimer.Interval = initialGracePeriodBetweenSteps.TotalMilliseconds / 2;
+				myTimer.Interval = initialGracePeriodBetweenSteps.TotalMilliseconds;
 			}
 			myTimer.Start();
 		}
@@ -62,9 +64,25 @@ namespace SmartShutdown
 		{
 			// set up timer
 			myTimer.AutoReset = false;
-			myTimer.Interval = initialGracePeriodBetweenSteps.TotalMilliseconds / 2;
+			myTimer.Interval = initialGracePeriodBetweenSteps.TotalMilliseconds;
 			myTimer.Elapsed += new ElapsedEventHandler(myTimer_Elapsed);			
 			myTimer.Start();
+		}
+
+		private void button1_Click_1(object sender, RoutedEventArgs e)
+		{
+			currentProtocol.StopShutdown();
+			this.Close();
+		}
+
+		private void button2_Click(object sender, RoutedEventArgs e)
+		{
+			currentProtocol.StopShutdown();
+		}
+
+		private void button3_Click(object sender, RoutedEventArgs e)
+		{
+			currentProtocol.Shutdown();
 		}
 	}
 }
