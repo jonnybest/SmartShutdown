@@ -114,13 +114,13 @@ namespace SmartShutdown
 			return true;
 		}
 
-		private void WaitAndShutdown()
+		private async void WaitAndShutdown()
 		{
 			foreach (var rule in _rules)
 			{
 				if (rule.CanWaitForOkay)
 				{
-					rule.Wait();
+					await rule.Wait();
 				}
 				else
 				{
@@ -140,7 +140,7 @@ namespace SmartShutdown
 		{
 			Debug.WriteLine("shutting down. good night", this.ToString());
 			_state = ShutdownSafetyStates.Final;
-			// new WPFAboutBox1(App.Current.MainWindow).ShowDialog(); // fake implementation 
+			new WPFAboutBox1(App.Current.MainWindow).ShowDialog(); // fake implementation 
 			Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe"), "/s /t 600");
 		}
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace SmartShutdown
 {
@@ -13,7 +14,7 @@ namespace SmartShutdown
 
 		public NoMacriumBackupRunningRule()
 		{
-			Debug.WriteLine("I exist!", this.ToString());
+			Debug.WriteLine("I, NoMacriumBackupRunningRule, exist!", this.ToString());
 		}
 
 		#region IShutdownRule Members
@@ -23,10 +24,10 @@ namespace SmartShutdown
 			Debug.WriteLine("Checking", this.ToString());
 
 			var procs = Process.GetProcessesByName(_procname);
-			_lastresult = procs.Count() == 0;
+			_lastresult = procs.AsEnumerable().Any();
 
-			Debug.WriteLineIf(_lastresult, "macrium is not running", this.ToString());
-			Debug.WriteLineIf(!_lastresult, "macrium is running", this.ToString());
+			Debug.WriteLineIf(!_lastresult, "macrium is not running", this.ToString());
+			Debug.WriteLineIf(_lastresult, "macrium is running", this.ToString());
 			return _lastresult;
 		}
 
@@ -52,13 +53,18 @@ namespace SmartShutdown
 		/// <summary>
 		/// Returns when there exist no more of these processes
 		/// </summary>
-		public void Wait()
+		public async Task Wait()
 		{
-			var procs = Process.GetProcessesByName(_procname);
+			// await syscall 
+			var procs = await new TaskFactory().StartNew(() => Process.GetProcessesByName(_procname));
+
+			// iterate processes 
 			while (procs.Count() > 0)
 			{
 				Debug.WriteLine("Waiting for " + procs.First().Id + " to exit", this.ToString());
-				procs.First().WaitForExit();
+				
+				// wait without blocking main thread for exit
+				await new TaskFactory().StartNew(() => procs.First().WaitForExit());
 
 				System.Threading.Thread.Sleep(15000); // sleep 15 seconds to allow new processes to spawn
 				procs = Process.GetProcessesByName(_procname);

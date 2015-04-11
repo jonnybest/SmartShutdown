@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SmartShutdown
 {
@@ -29,6 +30,6 @@ namespace SmartShutdown
 		/// <summary>
 		/// Wait until the criteria for this IShudownRule are fulfilled. The implementing class must throw an exception if it can't wait or the shutdown should not proceed.
 		/// </summary>
-		void Wait();
+		Task Wait();
 	}
 }

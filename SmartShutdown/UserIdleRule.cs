@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Win32_API;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace SmartShutdown
 {
@@ -50,7 +51,7 @@ namespace SmartShutdown
 				return false; }
 		}
 
-		public void Wait()
+		public Task Wait()
 		{
 			Debug.WriteLine("dafuq?", this.ToString());
 			throw new NotImplementedException();
