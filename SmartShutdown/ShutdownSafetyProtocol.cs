@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Management;
 
 namespace SmartShutdown
 {
@@ -136,15 +137,13 @@ namespace SmartShutdown
 			_state = ShutdownSafetyStates.Final;
 		}
 
-		public void Shutdown()
-		{
-			Debug.WriteLine("shutting down. good night", this.ToString());
-			_state = ShutdownSafetyStates.Final;
-			new WPFAboutBox1(App.Current.MainWindow).ShowDialog(); // fake implementation 
-			Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe"), "/s /t 600");
-		}
+        public void Shutdown()
+        {
+            Debug.WriteLine("shutting down. good night", this.ToString());
+            Win32_API.Win32.Shutdown();
+        }
 
-		public void StopShutdown()
+        public void StopShutdown()
 		{
 			Debug.WriteLine("shut down halted", this.ToString());
 			Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\system32\shutdown.exe"), "/a");

@@ -41,3 +41,5 @@ lint.db
 # Misc Ignores
 Thumbs.db
 !libs/*/[Bb]in/
+/.vs/SmartShutdown/v14/vbcs.cache
+/SmartShutdown.sln.ide
