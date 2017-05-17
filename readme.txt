@@ -6,3 +6,5 @@ The program can be extended with more rules by implementing the IShutdownRule in
 Author: Jonny Best
 Contact: shutdown@jbxf.de 
 Clone from: https://github.com/jonnybest/SmartShutdown
+
+License is provided in the license file.
